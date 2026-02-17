@@ -1,0 +1,9 @@
+[package]
+name = "kit"
+version = "0.1.0"
+edition = "2021"
+description = "Universal build tool that detects project build systems and runs build, test, lint, and format operations against changed files"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
