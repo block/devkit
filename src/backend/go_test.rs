@@ -20,10 +20,7 @@ fn affected_targets_go_files() {
     std::fs::create_dir_all(root.join("pkg/foo")).unwrap();
     std::fs::create_dir_all(root.join("pkg/bar")).unwrap();
 
-    let changed = vec![
-        PathBuf::from("pkg/foo/main.go"),
-        PathBuf::from("pkg/bar/util.go"),
-    ];
+    let changed = vec![PathBuf::from("pkg/foo/main.go"), PathBuf::from("pkg/bar/util.go")];
     let targets = backend().affected_targets(root, &changed);
     let labels: Vec<&str> = targets.iter().map(|t| t.label.as_str()).collect();
     assert_eq!(labels, vec!["./pkg/bar/...", "./pkg/foo/..."]);
@@ -35,10 +32,7 @@ fn affected_targets_ignores_non_go_files() {
     let root = tmp.path();
     std::fs::create_dir_all(root.join("pkg")).unwrap();
 
-    let changed = vec![
-        PathBuf::from("pkg/readme.md"),
-        PathBuf::from("pkg/data.json"),
-    ];
+    let changed = vec![PathBuf::from("pkg/readme.md"), PathBuf::from("pkg/data.json")];
     let targets = backend().affected_targets(root, &changed);
     assert!(targets.is_empty());
 }

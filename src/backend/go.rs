@@ -40,9 +40,9 @@ impl Backend for GoBackend {
         let mut packages: BTreeSet<PathBuf> = BTreeSet::new();
 
         for file in changed_files {
-            let is_dep_file = file.file_name().is_some_and(|name| {
-                name == "go.mod" || name == "go.sum" || name == "go.work" || name == "go.work.sum"
-            });
+            let is_dep_file = file
+                .file_name()
+                .is_some_and(|name| name == "go.mod" || name == "go.sum" || name == "go.work" || name == "go.work.sum");
 
             if is_dep_file {
                 let dir = file
@@ -67,10 +67,7 @@ impl Backend for GoBackend {
     }
 
     fn resolve_target(&self, repo_root: &Path, dir: PathBuf) -> Target {
-        let rel = dir
-            .strip_prefix(repo_root)
-            .unwrap_or(&dir)
-            .to_string_lossy();
+        let rel = dir.strip_prefix(repo_root).unwrap_or(&dir).to_string_lossy();
         let rel = rel.replace('\\', "/");
         let label = if rel.is_empty() {
             "./...".to_string()
@@ -107,8 +104,7 @@ impl Backend for GoBackend {
         let dirs: Vec<&str> = targets.iter().map(|t| t.label.as_str()).collect();
         let mut args = vec!["run"];
         args.extend(&dirs);
-        Self::run("golangci-lint", &args, repo_root)
-            .context("failed to run golangci-lint — is it installed?")
+        Self::run("golangci-lint", &args, repo_root).context("failed to run golangci-lint — is it installed?")
     }
 
     fn fmt(&self, repo_root: &Path, changed_files: &[PathBuf]) -> Result<()> {

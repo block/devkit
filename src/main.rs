@@ -49,30 +49,22 @@ enum Cmd {
     Detect,
 }
 
-fn detect_backend<'a>(
-    backends: &'a [Box<dyn Backend>],
-    repo_root: &std::path::Path,
-) -> Option<&'a dyn Backend> {
-    backends.iter().find_map(|b| {
-        if b.detect(repo_root) {
-            Some(b.as_ref())
-        } else {
-            None
-        }
-    })
+fn detect_backend<'a>(backends: &'a [Box<dyn Backend>], repo_root: &std::path::Path) -> Option<&'a dyn Backend> {
+    backends
+        .iter()
+        .find_map(|b| if b.detect(repo_root) { Some(b.as_ref()) } else { None })
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
     let repo_root = match cli.repo {
-        Some(p) => p.canonicalize().with_context(|| {
-            format!("could not canonicalize repo root: {}", p.display())
-        })?,
+        Some(p) => p
+            .canonicalize()
+            .with_context(|| format!("could not canonicalize repo root: {}", p.display()))?,
         None => {
             let root = git::repo_root().context("could not detect repo root")?;
-            root.canonicalize().with_context(|| {
-                format!("could not canonicalize repo root: {}", root.display())
-            })?
+            root.canonicalize()
+                .with_context(|| format!("could not canonicalize repo root: {}", root.display()))?
         }
     };
     let backends = all_backends();
@@ -151,7 +143,8 @@ fn resolve_targets(
                 anyhow::bail!("path {} is outside repository root", full.display());
             }
             if full.is_file() {
-                full = full.parent()
+                full = full
+                    .parent()
                     .with_context(|| format!("{} has no parent directory", d.display()))?
                     .to_path_buf();
             }
