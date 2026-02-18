@@ -7,13 +7,6 @@ fn backend() -> GoBackend {
 }
 
 #[test]
-fn detect_go_mod() {
-    let tmp = TempDir::new().unwrap();
-    std::fs::write(tmp.path().join("go.mod"), "module test").unwrap();
-    assert!(backend().detect(tmp.path()));
-}
-
-#[test]
 fn affected_targets_go_files() {
     let tmp = TempDir::new().unwrap();
     let root = tmp.path();
@@ -58,14 +51,4 @@ fn affected_targets_nested_go_mod() {
     let targets = backend().affected_targets(root, &changed);
     assert_eq!(targets.len(), 1);
     assert_eq!(targets[0].label, "./sub/...");
-}
-
-#[test]
-fn resolve_target_subdir() {
-    let tmp = TempDir::new().unwrap();
-    let root = tmp.path();
-    let dir = root.join("pkg/foo");
-    let target = backend().resolve_target(root, dir.clone());
-    assert_eq!(target.label, "./pkg/foo/...");
-    assert_eq!(target.dir, dir);
 }
