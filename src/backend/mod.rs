@@ -1,8 +1,10 @@
+mod bazel;
 mod go;
 
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 
+pub use bazel::BazelBackend;
 pub use go::GoBackend;
 
 /// A build target identified by a backend.
@@ -35,5 +37,5 @@ pub trait Backend {
 
 /// Returns all registered backends.
 pub fn all_backends() -> Vec<Box<dyn Backend>> {
-    vec![Box::new(GoBackend)]
+    vec![Box::new(BazelBackend), Box::new(GoBackend)]
 }

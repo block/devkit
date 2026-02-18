@@ -7,3 +7,6 @@ description = "Universal build tool that detects project build systems and runs 
 [dependencies]
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3"
