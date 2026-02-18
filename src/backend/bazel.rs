@@ -42,10 +42,7 @@ impl BazelBackend {
 
         let file_labels: Vec<String> = changed_files
             .iter()
-            .filter_map(|f| {
-                let rel = f.to_string_lossy().replace('\\', "/");
-                Some(rel)
-            })
+            .map(|f| f.to_string_lossy().replace('\\', "/"))
             .collect();
 
         let quoted: Vec<String> = file_labels.iter().map(|f| format!("\"{f}\"")).collect();
@@ -103,11 +100,7 @@ fn which_exists(cmd: &str) -> bool {
 }
 
 fn label_to_dir(repo_root: &Path, label: &str) -> PathBuf {
-    let pkg = label
-        .trim_start_matches("//")
-        .split(':')
-        .next()
-        .unwrap_or("");
+    let pkg = label.trim_start_matches("//").split(':').next().unwrap_or("");
     repo_root.join(pkg)
 }
 
@@ -117,9 +110,7 @@ impl Backend for BazelBackend {
     }
 
     fn detect(&self, dir: &Path) -> bool {
-        dir.join("WORKSPACE").exists()
-            || dir.join("WORKSPACE.bazel").exists()
-            || dir.join("MODULE.bazel").exists()
+        dir.join("WORKSPACE").exists() || dir.join("WORKSPACE.bazel").exists() || dir.join("MODULE.bazel").exists()
     }
 
     fn affected_targets(&self, repo_root: &Path, changed_files: &[PathBuf]) -> Vec<Target> {
@@ -191,14 +182,13 @@ impl Backend for BazelBackend {
             let labels: Vec<&str> = targets.iter().map(|t| t.label.as_str()).collect();
             let mut args = vec!["run", "//:buildifier", "--"];
             args.extend(&labels);
-            Self::run(Self::bazel_cmd(), &args, repo_root)
-                .or_else(|_| {
-                    eprintln!("kit: //:buildifier target not found, running buildifier directly");
-                    let dirs: Vec<&str> = targets.iter().map(|t| t.dir.to_str().unwrap_or(".")).collect();
-                    let mut fallback_args = vec!["-lint=warn", "-r"];
-                    fallback_args.extend(&dirs);
-                    Self::run("buildifier", &fallback_args, repo_root)
-                })
+            Self::run(Self::bazel_cmd(), &args, repo_root).or_else(|_| {
+                eprintln!("kit: //:buildifier target not found, running buildifier directly");
+                let dirs: Vec<&str> = targets.iter().map(|t| t.dir.to_str().unwrap_or(".")).collect();
+                let mut fallback_args = vec!["-lint=warn", "-r"];
+                fallback_args.extend(&dirs);
+                Self::run("buildifier", &fallback_args, repo_root)
+            })
         } else {
             eprintln!("kit: buildifier not found, skipping lint");
             Ok(())
@@ -210,8 +200,11 @@ impl Backend for BazelBackend {
             .iter()
             .filter(|f| {
                 let name = f.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                name == "BUILD" || name == "BUILD.bazel" || name == "WORKSPACE"
-                    || name == "WORKSPACE.bazel" || name == "MODULE.bazel"
+                name == "BUILD"
+                    || name == "BUILD.bazel"
+                    || name == "WORKSPACE"
+                    || name == "WORKSPACE.bazel"
+                    || name == "MODULE.bazel"
                     || name.ends_with(".bzl")
             })
             .map(|f| repo_root.join(f))
