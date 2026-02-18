@@ -128,3 +128,7 @@ impl Backend for GoBackend {
         Self::run("gofmt", args, repo_root)
     }
 }
+
+#[cfg(test)]
+#[path = "go_test.rs"]
+mod tests;
