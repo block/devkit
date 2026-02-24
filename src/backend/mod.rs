@@ -1,5 +1,6 @@
 mod bazel;
 mod go;
+mod js;
 
 use anyhow::Result;
 use std::path::{Path, PathBuf};
@@ -37,5 +38,10 @@ pub trait Backend {
 
 /// Returns all registered backends.
 pub fn all_backends() -> Vec<Box<dyn Backend>> {
-    vec![Box::new(BazelBackend), Box::new(GoBackend)]
+    vec![
+        Box::new(BazelBackend),
+        Box::new(js::PNPM),
+        Box::new(js::YARN),
+        Box::new(GoBackend),
+    ]
 }
