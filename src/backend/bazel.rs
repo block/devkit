@@ -27,11 +27,7 @@ impl BazelBackend {
     }
 
     fn bazel_cmd() -> &'static str {
-        if which_exists("bazelisk") {
-            "bazelisk"
-        } else {
-            "bazel"
-        }
+        if which_exists("bazelisk") { "bazelisk" } else { "bazel" }
     }
 
     /// Use `bazel query` with `rdeps` to find all targets affected by the changed files.
