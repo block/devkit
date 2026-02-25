@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 use std::env;
 use std::path::PathBuf;
 
-use backend::{all_backends, Backend};
+use backend::{Backend, all_backends};
 
 #[derive(Parser)]
 #[command(name = "kit", about = "Universal build tool", version)]
