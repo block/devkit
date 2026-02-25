@@ -28,17 +28,28 @@ jobs:
       - id: build
         shell: bash
         run: |
-          export TARGET="${{ matrix.arch }}-${{ matrix.target-suffix }}"
-          rustup target add "${TARGET}"
-          cross build --release --target "${TARGET}"
-          export TARGET_PATH="target/${TARGET}/release/kit-${TARGET}"
-          mv "target/${TARGET}"/release/kit "${TARGET_PATH}"
-          bzip2 -f9 "${TARGET_PATH}"
-          echo "TARGET_PATH=${TARGET_PATH}.bz2" >> "$GITHUB_OUTPUT"
+          export RUST_TARGET="${{ matrix.arch }}-${{ matrix.target-suffix }}"
+          rustup target add "${RUST_TARGET}"
+          cross build --release --target "${RUST_TARGET}"
+
+          # Map Rust target names to hermit-friendly names
+          case "${{ matrix.target-suffix }}" in
+            apple-darwin) HERMIT_OS="darwin" ;;
+            unknown-linux-gnu) HERMIT_OS="linux" ;;
+          esac
+          case "${{ matrix.arch }}" in
+            x86_64) HERMIT_ARCH="amd64" ;;
+            aarch64) HERMIT_ARCH="arm64" ;;
+          esac
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          ARCHIVE="kit-${VERSION}-${HERMIT_OS}-${HERMIT_ARCH}.tar.gz"
+          tar czf "${ARCHIVE}" -C "target/${RUST_TARGET}/release" kit
+          echo "ARCHIVE=${ARCHIVE}" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # ratchet:actions/upload-artifact@v6
         with:
           name: kit-${{ matrix.arch }}-${{ matrix.target-suffix }}
-          path: ${{ steps.build.outputs.TARGET_PATH }}
+          path: ${{ steps.build.outputs.ARCHIVE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release:
@@ -58,6 +69,6 @@ jobs:
       - run: just release-notes > release-notes.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: gh release create ${{ github.ref_name }} kit-*.bz2 --title ${{ github.ref_name }} --notes-file release-notes.md
+      - run: gh release create ${{ github.ref_name }} kit-*.tar.gz --title ${{ github.ref_name }} --notes-file release-notes.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
