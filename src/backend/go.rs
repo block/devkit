@@ -51,6 +51,7 @@ impl Backend for GoBackend {
                     .unwrap_or_else(|| repo_root.to_path_buf());
                 packages.insert(dir);
             } else if file.extension().is_some_and(|ext| ext == "go") {
+                #[allow(clippy::collapsible_if)]
                 if let Some(parent) = file.parent() {
                     let dir = repo_root.join(parent);
                     if dir.exists() {
